@@ -1,0 +1,35 @@
+--// Khởi tạo GUI local player = game.Players.LocalPlayer local gui = Instance.new("ScreenGui", player:WaitForChild("PlayerGui")) gui.Name = "InfoGUI" gui.ResetOnSpawn = false
+
+--// Frame chính local frame = Instance.new("Frame", gui) frame.Position = UDim2.new(0, 10, 0, 10) frame.Size = UDim2.new(0, 280, 0, 260) frame.BackgroundColor3 = Color3.fromRGB(0, 0, 0) frame.BackgroundTransparency = 0.4 frame.BorderSizePixel = 0 frame.Active = true frame.Draggable = true
+
+--// Tiêu đề local title = Instance.new("TextLabel", frame) title.Size = UDim2.new(1, 0, 0, 30) title.Text = "FB: Di Nhân Nguyễn" title.TextColor3 = Color3.fromRGB(255, 215, 0) title.BackgroundColor3 = Color3.fromRGB(0, 0, 0) title.TextScaled = true title.Font = Enum.Font.SourceSansBold
+
+--// Username local usernameLabel = Instance.new("TextLabel", frame) usernameLabel.Position = UDim2.new(0, 5, 0, 35) usernameLabel.Size = UDim2.new(1, -10, 0, 20) usernameLabel.TextColor3 = Color3.fromRGB(255, 255, 255) usernameLabel.BackgroundTransparency = 1 usernameLabel.TextScaled = true usernameLabel.TextXAlignment = Enum.TextXAlignment.Left local nameHidden = string.sub(player.Name, 1, #player.Name - 3) .. "***" usernameLabel.Text = "Username: <font color='rgb(0,191,255')">" .. nameHidden .. "</font>" usernameLabel.RichText = true
+
+--// Task local taskLabel = Instance.new("TextLabel", frame) taskLabel.Position = UDim2.new(0, 5, 0, 60) taskLabel.Size = UDim2.new(1, -10, 0, 20) taskLabel.Text = "Task: <font color='rgb(0,255,0)'>FULL GEAR SKY</font>" taskLabel.TextColor3 = Color3.fromRGB(255, 255, 255) taskLabel.BackgroundTransparency = 1 taskLabel.TextScaled = true taskLabel.TextXAlignment = Enum.TextXAlignment.Left taskLabel.RichText = true
+
+--// Nhập Task local taskBox = Instance.new("TextBox", frame) taskBox.Position = UDim2.new(0, 5, 0, 85) taskBox.Size = UDim2.new(1, -10, 0, 20) taskBox.Text = "" taskBox.PlaceholderText = "Nhập task tại đây..." taskBox.BackgroundColor3 = Color3.fromRGB(50, 50, 50) taskBox.BackgroundTransparency = 0.2 taskBox.TextColor3 = Color3.fromRGB(255, 255, 255) taskBox.TextScaled = true taskBox.ClearTextOnFocus = false
+
+taskBox.FocusLost:Connect(function(enter) if enter then taskLabel.Text = "Task: <font color='rgb(0,255,0')">" .. taskBox.Text .. "</font>" end end)
+
+--// Time + FPS local timeFps = Instance.new("TextLabel", frame) timeFps.Position = UDim2.new(0, 5, 0, 110) timeFps.Size = UDim2.new(1, -10, 0, 20) timeFps.BackgroundTransparency = 1 timeFps.TextScaled = true timeFps.RichText = true timeFps.TextXAlignment = Enum.TextXAlignment.Left
+
+local runService = game:GetService("RunService") local startTime = tick()
+
+spawn(function() while true do task.wait(1) local elapsed = math.floor(tick() - startTime) local minutes = math.floor(elapsed / 60) local seconds = elapsed % 60 local fps = math.floor(1 / runService.RenderStepped:Wait()) timeFps.Text = string.format( "<font color='white'>Time:</font> <font color='red'>%02dm%02ds</font> <font color='white'>- FPS:</font> <font color='red'>%02d</font>", minutes, seconds, fps) end end)
+
+--// Job ID hiện tại local jobIdLabel = Instance.new("TextLabel", frame) jobIdLabel.Position = UDim2.new(0, 5, 0, 135) jobIdLabel.Size = UDim2.new(1, -30, 0, 20) jobIdLabel.Text = "Job ID: " .. game.JobId jobIdLabel.TextColor3 = Color3.fromRGB(150, 150, 150) jobIdLabel.BackgroundTransparency = 1 jobIdLabel.TextScaled = true jobIdLabel.TextXAlignment = Enum.TextXAlignment.Left
+
+local copyBtn = Instance.new("TextButton", frame) copyBtn.Position = UDim2.new(1, -25, 0, 135) copyBtn.Size = UDim2.new(0, 20, 0, 20) copyBtn.Text = "C" copyBtn.TextScaled = true copyBtn.BackgroundColor3 = Color3.fromRGB(100, 100, 100) copyBtn.MouseButton1Click:Connect(function() setclipboard(game.JobId) end)
+
+--// Nhập Job ID để teleport local jobInput = Instance.new("TextBox", frame) jobInput.Position = UDim2.new(0, 5, 0, 160) jobInput.Size = UDim2.new(1, -60, 0, 20) jobInput.PlaceholderText = "Dán Job ID để hop server" jobInput.TextScaled = true jobInput.ClearTextOnFocus = true
+
+local tpBtn = Instance.new("TextButton", frame) tpBtn.Position = UDim2.new(1, -50, 0, 160) tpBtn.Size = UDim2.new(0, 45, 0, 20) tpBtn.Text = "Enter" tpBtn.TextScaled = true tpBtn.BackgroundColor3 = Color3.fromRGB(80, 80, 80) tpBtn.MouseButton1Click:Connect(function() if jobInput.Text ~= "" then game:GetService("TeleportService"):TeleportToPlaceInstance(game.PlaceId, jobInput.Text, player) end end)
+
+--// Nút ẩn GUI local hideBtn = Instance.new("TextButton", frame) hideBtn.Position = UDim2.new(0, 5, 1, -25) hideBtn.Size = UDim2.new(0.5, -10, 0, 20) hideBtn.Text = "Ẩn GUI" hideBtn.TextScaled = true hideBtn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+
+local visible = true hideBtn.MouseButton1Click:Connect(function() visible = not visible for _, child in pairs(frame:GetChildren()) do if child ~= title and child ~= hideBtn and child ~= closeBtn then child.Visible = visible end end frame.BackgroundTransparency = visible and 0.4 or 1 end)
+
+--// Nút tắt GUI closeBtn = Instance.new("TextButton", frame) closeBtn.Position = UDim2.new(0.5, 5, 1, -25) closeBtn.Size = UDim2.new(0.5, -10, 0, 20) closeBtn.Text = "Tắt GUI" closeBtn.TextScaled = true closeBtn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+
+closeBtn.MouseButton1Click:Connect(function() local confirm = Instance.new("TextButton", gui) confirm.Size = UDim2.new(0, 200, 0, 100) confirm.Position = UDim2.new(0.5, -100, 0.5, -50) confirm.BackgroundColor3 = Color3.fromRGB(0, 0, 0) confirm.BackgroundTransparency = 0.3 confirm.Text = "BẠN CÓ CHẮC MUỐN TẮT GUI?\nClick để xác nhận" confirm.TextScaled = true confirm.TextColor3 = Color3.new(1, 0, 0) confirm.MouseButton1Click:Connect(function() gui:Destroy() end) end)
