@@ -1,13 +1,41 @@
--- Main Controller Script
+-- Main Controller Script with GUI Log
+
+repeat wait() until game:IsLoaded()
 
 local HttpService = game:GetService("HttpService")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local LocalPlayer = Players.LocalPlayer
 local playerName = LocalPlayer.Name
-local workspaceFolder = "workspace" -- Thư mục lưu file, bạn có thể đổi nếu cần
+local workspaceFolder = "workspace"
 
--- Các đường dẫn script
+-- GUI Log
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "LogGui"
+ScreenGui.Parent = game.CoreGui
+
+local Frame = Instance.new("Frame")
+Frame.Size = UDim2.new(0, 200, 0, 50)
+Frame.Position = UDim2.new(0, 10, 0, 10)
+Frame.BackgroundColor3 = Color3.fromRGB(30,30,30)
+Frame.Parent = ScreenGui
+
+local LogLabel = Instance.new("TextLabel")
+LogLabel.Size = UDim2.new(1, 0, 1, 0)
+LogLabel.Position = UDim2.new(0, 0, 0, 0)
+LogLabel.BackgroundTransparency = 1
+LogLabel.Text = "(...)"
+LogLabel.TextColor3 = Color3.fromRGB(255,255,255)
+LogLabel.Font = Enum.Font.SourceSansBold
+LogLabel.TextSize = 18
+LogLabel.Parent = Frame
+
+local function updateLog(msg)
+    LogLabel.Text = "(...) " .. msg
+    print(msg)
+end
+
+-- Scripts
 local scriptA = 'getgenv().Team = "Marines"\nloadstring(game:HttpGet("https://api.luarmor.net/files/v3/loaders/85e904ae1ff30824c1aa007fc7324f8f.lua"))()'
 local scriptB = [[
 getgenv().Config = {
@@ -36,7 +64,7 @@ getgenv().Key = "e9162fb60364a89d94d75009"
 loadstring(game:HttpGet("https://raw.githubusercontent.com/obiiyeuem/vthangsitink/main/BananaHub.lua"))()
 ]]
 
--- Hàm kiểm tra Fist of Darkness trong túi đồ
+-- Kiểm tra Fist of Darkness
 local function hasFistOfDarkness()
     for _, item in pairs(LocalPlayer.Backpack:GetChildren()) do
         if item.Name:lower():find("fist of darkness") then
@@ -46,35 +74,32 @@ local function hasFistOfDarkness()
     return false
 end
 
--- Hàm kiểm tra fragment
+-- Kiểm tra fragment
 local function getFragment()
     local stats = LocalPlayer:FindFirstChild("Data") or LocalPlayer
     return stats:FindFirstChild("Fragments") and stats.Fragments.Value or 0
 end
 
--- Hàm kiểm tra Cyborg
+-- Kiểm tra Cyborg
 local function hasCyborg()
     local stats = LocalPlayer:FindFirstChild("Data") or LocalPlayer
     return stats:FindFirstChild("Race") and stats.Race.Value == "Cyborg"
 end
 
--- Hàm kiểm tra Cyborg V3
+-- Kiểm tra Cyborg V3
 local function hasCyborgV3()
     local stats = LocalPlayer:FindFirstChild("Data") or LocalPlayer
     return stats:FindFirstChild("Race") and stats.Race.Value == "Cyborg" and stats:FindFirstChild("RaceLevel") and stats.RaceLevel.Value == 3
 end
 
--- Hàm lưu trạng thái đã gắn Fist of Darkness
+-- Lưu trạng thái fist vào workspace (dùng mẫu tham khảo)
 local function saveFistStatus()
-    local src = workspaceFolder.."/fist.json"
-    local dest = workspaceFolder.."/"..playerName..".json"
-    if isfile(src) then
-        local data = readfile(src)
-        writefile(dest, data)
-    end
+    local jsonData = string.format('{"name":"%s","timestamp":"%s","fist":true}', playerName, os.date("!%Y-%m-%dT%H:%M:%SZ"))
+    writefile(workspaceFolder.."/"..playerName..".json", jsonData)
+    updateLog("Đã lưu trạng thái fist cho " .. playerName)
 end
 
--- Hàm kiểm tra trạng thái đã gắn Fist of Darkness
+-- Kiểm tra trạng thái fist đã lưu
 local function isFistSaved()
     local file = workspaceFolder.."/"..playerName..".json"
     if isfile(file) then
@@ -84,22 +109,23 @@ local function isFistSaved()
     return false
 end
 
--- Hàm hop server (bạn cần thay thế bằng script hop server của bạn)
+-- Hop server (placeholder)
 local function hopServer()
-    -- Ví dụ: loadstring(game:HttpGet("link_hop_server"))()
-    print("Hopping server...")
+    updateLog("Đang hop server...")
+    -- loadstring(game:HttpGet("link_hop_server"))()
 end
 
--- Hàm kiểm tra và chuyển về Sea 2
+-- Chuyển về Sea 2
 local function checkAndTravelToSea2()
     local seaIds = {[2753915549] = 1, [4442272183] = 2, [7449423635] = 3}
     local seaTravelCommands = {
-        [1] = "TravelMain",       -- Sea 2 → Sea 1
-        [2] = "TravelDressrosa",  -- Sea 1 → Sea 2
-        [3] = "TravelZou"         -- Sea 2 → Sea 3
+        [1] = "TravelMain",
+        [2] = "TravelDressrosa",
+        [3] = "TravelZou"
     }
     local currentSea = seaIds[game.PlaceId]
     if currentSea ~= 2 then
+        updateLog("Đang chuyển về Sea 2...")
         local command = seaTravelCommands[2]
         if command then
             pcall(ReplicatedStorage.Remotes.CommF_.InvokeServer, ReplicatedStorage.Remotes.CommF_, command)
@@ -119,29 +145,34 @@ end)
 spawn(function()
     while true do
         if hasCyborgV3() then
-            print("done Cyborg V3")
+            updateLog("done Cyborg V3")
             break
         end
 
+        -- Fix: Nếu đã có fist thì lưu trạng thái và chạy script B ngay
         if not isFistSaved() then
-            -- Chưa gắn fist, kiểm tra liên tục
-            if not hasFistOfDarkness() then
-                loadstring(scriptA)()
-            else
+            if hasFistOfDarkness() then
                 saveFistStatus()
+                updateLog("Đã có Fist of Darkness, chạy script B")
                 loadstring(scriptB)()
+            else
+                updateLog("Chưa có Fist of Darkness, chạy script A")
+                loadstring(scriptA)()
             end
         else
+            updateLog("Đã lưu trạng thái fist, chạy script B")
             loadstring(scriptB)()
         end
 
         if getFragment() < 1000 then
             hopServer()
+            updateLog("Fragment dưới 1000, chạy script D")
             loadstring(scriptD)()
         end
 
-        if hasCyborg() then
+        if hasCyborg() and not hasCyborgV3() then
             hopServer()
+            updateLog("Đã có Cyborg, chạy script C")
             loadstring(scriptC)()
         end
 
