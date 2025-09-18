@@ -153,14 +153,14 @@ spawn(function()
         if not isFistSaved() then
             if hasFistOfDarkness() then
                 saveFistStatus()
-                updateLog("Đã có Fist of Darkness, chạy script B")
+                updateLog("GET cyborg")
                 loadstring(scriptB)()
             else
-                updateLog("Chưa có Fist of Darkness, chạy script A")
+                updateLog("GET Fist of Darkness")
                 loadstring(scriptA)()
             end
         else
-            updateLog("Đã lưu trạng thái fist, chạy script B")
+            updateLog("gET CYBORG")
             loadstring(scriptB)()
         end
 
@@ -172,7 +172,7 @@ spawn(function()
 
         if hasCyborg() and not hasCyborgV3() then
             hopServer()
-            updateLog("Đã có Cyborg, chạy script C")
+            updateLog("get V3")
             loadstring(scriptC)()
         end
 
